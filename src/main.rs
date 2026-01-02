@@ -24,7 +24,7 @@ async fn main() -> anyhow::Result<()> {
 
     let command = &args[1];
     let parameter = &args[2];
-    
+
     match command.as_str() {
         "index" => {
             let indexer = Indexer::new(db_uri, model_name).await;
@@ -34,8 +34,9 @@ async fn main() -> anyhow::Result<()> {
             let searcher = Searcher::new(db_uri, model_name).await;
             searcher.search(parameter).await?;
         }
+        // AI Test Update
         "mount" => {
-            let mountpoint = parameter;
+            let mountpoint = parameter.to_string();
             println!("正在挂载 AI 文件系统到: {}", mountpoint);
             println!("请在另一个终端尝试: echo '你的问题' > {}/ask", mountpoint);
             
@@ -49,12 +50,16 @@ async fn main() -> anyhow::Result<()> {
 
             let fs = AiFS::new(searcher);
             
-            // 挂载！这会阻塞主线程
-            fuser::mount2(fs, mountpoint, &[
-                MountOption::RW, 
-                MountOption::FSName("aifs".to_string()),
-                MountOption::AutoUnmount,
-            ]).unwrap();
+            let mount_handle = tokio::task::spawn_blocking(move || {
+                fuser::mount2(fs, mountpoint, &[
+                    MountOption::RW, 
+                    MountOption::FSName("aifs".to_string()),
+                    MountOption::AutoUnmount,
+                ]).unwrap();
+            });
+
+            // 等待挂载结束 (实际上如果不卸载，这里会一直等)
+            mount_handle.await.unwrap();
         }
         _ => {
             println!("未知命令: {}", command);
