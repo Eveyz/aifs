@@ -5,8 +5,21 @@ edition = "2024"
 
 [dependencies]
 tokio = { version = "1.0", features = ["full"] }
-lancedb = "0.4"
-arrow = "51.0"  # 这里的版本号保持和你报错信息里的一致即可，或者干脆删掉这行让lancedb自己管
+
+# ✅ 降级 LanceDB
+lancedb = "=0.23.1"
+
+# ✅ 对应 Arrow 51
+# arrow = "=51.0.0"
+arrow-schema = "=56.2.0"
+arrow-array = "=56.2.0"
+
+# ✅ 关键：锁旧 Chrono（没有 quarter）
+# chrono = "=0.4.41"
+
+# 强制锁定 chrono 版本为 0.4.38，这个版本没有 quarter() 方法，不会冲突
+# chrono = "=0.4.38"
+
 walkdir = "2.4"
 reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
@@ -14,11 +27,10 @@ serde_json = "1.0"
 anyhow = "1.0"
 futures = "0.3"
 
-# 强制锁定 chrono 版本为 0.4.38，这个版本没有 quarter() 方法，不会冲突
-chrono = "=0.4.38"
 
 fuser = "0.14"
 libc = "0.2"
 time = "0.3" # 用于处理文件时间戳
 slab = "0.4" # 用于管理 Inode 映射
 notify = "6.1"
+zip = "0.6"
